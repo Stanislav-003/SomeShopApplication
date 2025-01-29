@@ -1,3 +1,3 @@
-﻿namespace SomeShop.Api.Controllers;
+﻿namespace SomeShop.Api.Controllers.Users;
 
 public record GetUsersForNDaysRequest(int nDays);

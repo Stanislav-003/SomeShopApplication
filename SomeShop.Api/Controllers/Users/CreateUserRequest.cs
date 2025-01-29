@@ -1,4 +1,4 @@
-﻿namespace SomeShop.Api.Controllers;
+﻿namespace SomeShop.Api.Controllers.Users;
 
 public record CreateUserRequest(
     string firstName,

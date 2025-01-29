@@ -32,6 +32,16 @@ public class Purchase
         return purchase;
     }
 
+    public void AddPurchaseItem(PurchaseItem purchaseItem)
+    {
+        if (purchaseItem == null)
+        {
+            throw new ArgumentNullException(nameof(purchaseItem));
+        }
+
+        _purchaseItems.Add(purchaseItem);
+    }
+
     //public Result<PurchaseItem> AddItem(Guid productId, int quantity, decimal price)
     //{
     //    var item = new PurchaseItem(Guid.NewGuid(), productId, Id, quantity);
