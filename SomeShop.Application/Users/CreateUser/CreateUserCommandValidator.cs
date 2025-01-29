@@ -6,8 +6,13 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
     public CreateUserCommandValidator()
     {
-        RuleFor(c => c.firstName).NotEmpty().Must(firstName => firstName.Value.Length is >= 2 and <= 50);
-        RuleFor(c => c.lastName).NotEmpty().Must(lastName => lastName.Value.Length is >= 2 and <= 50);
-        RuleFor(c => c.dateOfBirth).NotEmpty().Must(date => date <= DateTime.UtcNow).Must(date => date > DateTime.UtcNow.AddYears(-120));
+        RuleFor(x => x.firstName).NotEmpty();
+
+        RuleFor(x => x.lastName).NotEmpty();
+
+        RuleFor(x => x.dateOfBirth)
+            .NotEmpty()
+            .LessThan(DateTime.Now).WithMessage("Date of birth cannot be in the future.")
+            .GreaterThan(DateTime.Now.AddYears(-120)); // age > 120
     }
 }

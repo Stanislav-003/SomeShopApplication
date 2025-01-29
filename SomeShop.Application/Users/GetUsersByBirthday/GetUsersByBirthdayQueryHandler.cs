@@ -4,7 +4,7 @@ using SomeShop.Domain.Users;
 
 namespace SomeShop.Application.Users.GetUsersByBirthday;
 
-public class GetUsersByBirthdayQueryHandler : IQueryHandler<GetUsersByBirthdayQuery, IReadOnlyList<UsersResponse>>
+public class GetUsersByBirthdayQueryHandler : IQueryHandler<GetUsersByBirthdayQuery, IReadOnlyCollection<GetUsersByBirthdayResponse>>
 {
     private readonly IUserRepository _userRepository;
 
@@ -13,13 +13,22 @@ public class GetUsersByBirthdayQueryHandler : IQueryHandler<GetUsersByBirthdayQu
         _userRepository = userRepository;
     }
 
-    public async Task<Result<IReadOnlyList<UsersResponse>>> Handle(GetUsersByBirthdayQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyCollection<GetUsersByBirthdayResponse>>> Handle(GetUsersByBirthdayQuery request, CancellationToken cancellationToken)
     {
-        DateTime queryDate = request.birthday ?? DateTime.UtcNow;
+        DateTime queryDate = DateTime.UtcNow;
 
-        var users = await _userRepository.GetUsersByBirthday(queryDate, cancellationToken);
+        var users = await _userRepository.GetUsersByBirthday(cancellationToken);
 
-        var usersResponse = users.Select(u => new UsersResponse(u.Id, u.FirstName.Value, u.LastName.Value)).ToList();
+        if (users == null || !users.Any())
+        {
+            return Result.Failure<IReadOnlyCollection<GetUsersByBirthdayResponse>>(new Error("Firstname.Empty", "First name cannot be empty."));
+        }
+
+        var usersResponse = users.Select(u => new GetUsersByBirthdayResponse(
+            u.Id.Value, 
+            u.FullName.FirstName, 
+            u.FullName.LastName))
+            .ToList();
 
         return usersResponse;
     }

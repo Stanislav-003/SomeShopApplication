@@ -2,5 +2,5 @@
 
 public interface IProductRepository
 {
-    Task<Product?> GetByIdAsync(Guid productId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Product>> GetByCategoryAsync(Categtory categtory, CancellationToken cancellationToken = default);
 }

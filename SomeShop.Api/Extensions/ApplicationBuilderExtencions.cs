@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SomeShop.Api.Middleware;
 using SomeShop.Infrastructure;
 
 namespace SomeShop.Api.Extensions;
@@ -12,5 +13,10 @@ public static class ApplicationBuilderExtencions
         using ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         dbContext.Database.Migrate();
+    }
+
+    public static void UseCustomExceptionHandler(this IApplicationBuilder app)
+    {
+        app.UseMiddleware<GlobalExceptionHandlingMiddlware>();
     }
 }

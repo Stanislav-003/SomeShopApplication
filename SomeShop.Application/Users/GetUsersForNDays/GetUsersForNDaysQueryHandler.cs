@@ -5,34 +5,46 @@ using SomeShop.Domain.Users;
 
 namespace SomeShop.Application.Users.GetUsersForNDays;
 
-public class GetUsersForNDaysQueryHandler : IQueryHandler<GetUsersForNDaysQuery, IReadOnlyList<UsersResponse>>
+public class GetUsersForNDaysQueryHandler : IQueryHandler<GetUsersForNDaysQuery, IReadOnlyCollection<GetUsersForNDaysResponse>>
 {
-    private readonly IPurchaseRepository _purchaseRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IPurchaseRepository _purchaseRepository;
 
-    public GetUsersForNDaysQueryHandler(IPurchaseRepository purchaseRepository, IUserRepository userRepository)
+    public GetUsersForNDaysQueryHandler(IUserRepository userRepository, IPurchaseRepository purchaseRepository)
     {
-        _purchaseRepository = purchaseRepository;
         _userRepository = userRepository;
+        _purchaseRepository = purchaseRepository;
     }
 
-    public async Task<Result<IReadOnlyList<UsersResponse>>> Handle(GetUsersForNDaysQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyCollection<GetUsersForNDaysResponse>>> Handle(GetUsersForNDaysQuery request, CancellationToken cancellationToken)
     {
         DateTime endDate = DateTime.UtcNow;
         DateTime startDate = endDate.AddDays(-request.nDays);
 
-        var recentPurchases = await _purchaseRepository.GetPurchasesForPeriod(startDate, endDate, cancellationToken);
+        var users = await _userRepository.GetRecentPurchasesAsync(request.nDays, cancellationToken);
 
-        var usersWithLastPurchase = recentPurchases
-            .GroupBy(p => p.UserId)
-            .Select(g => new UsersResponse(
-                g.Key,
-                g.OrderByDescending(p => p.CreatedAt).FirstOrDefault()!.User.FirstName.Value,
-                g.OrderByDescending(p => p.CreatedAt).FirstOrDefault()!.User.LastName.Value,
-                g.OrderByDescending(p => p.CreatedAt).FirstOrDefault()!.CreatedAt
-            ))
-            .ToList();
+        var result = new List<GetUsersForNDaysResponse>();
 
-        return usersWithLastPurchase;
+        foreach (var user in users)
+        {
+            var recentPurchases = await _purchaseRepository.GetPurchasesByUserId(user.Id, cancellationToken);
+
+            var lastPurchase = recentPurchases
+                .Where(p => p.CreatedAt >= startDate && p.CreatedAt <= endDate)
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefault();
+
+            if (lastPurchase != null)
+            {
+                result.Add(new GetUsersForNDaysResponse(
+                    user.Id.Value,
+                    user.FullName.FirstName,
+                    user.FullName.LastName,
+                    lastPurchase.CreatedAt
+                ));
+            }
+        }
+
+        return result;
     }
 }

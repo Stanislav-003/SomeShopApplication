@@ -1,3 +1,3 @@
-﻿namespace SomeShop.Application.Abstractions.Behaviors;
+﻿namespace SomeShop.Application.Exceptions;
 
 public sealed record ValidationError(string PropertyName, string ErrorMessage);

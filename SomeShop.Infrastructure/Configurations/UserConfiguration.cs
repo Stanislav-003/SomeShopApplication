@@ -12,33 +12,19 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasKey(u => u.Id);
 
-        builder.Property(u => u.Id)
-            .IsRequired()
-            .ValueGeneratedNever(); 
+        builder.Property(u => u.Id).HasConversion(user => user.Value, value => new UserId(value));
 
-        builder.Property(u => u.FirstName)
-            .IsRequired()
-            .HasConversion(
-                v => v.Value,
-                v => new FirstName(v)) 
-            .HasMaxLength(50);
+        builder.OwnsOne(u => u.FullName, fn =>
+        {
+            fn.Property(f => f.FirstName).HasColumnName("FirstName").IsRequired();
+            fn.Property(f => f.LastName).HasColumnName("LastName").IsRequired();
+        });
 
-        builder.Property(u => u.LastName)
-            .IsRequired()
-            .HasConversion(
-                v => v.Value, 
-                v => new LastName(v)) 
-            .HasMaxLength(50); 
+        builder.Property(u => u.DateOfBirth).IsRequired();
 
-        builder.Property(u => u.DateOfBirth)
-            .IsRequired();
-
-        builder.Property(u => u.CreatedAt)
-            .IsRequired();
-
-        builder.HasMany(u => u.Purchases)
-            .WithOne(p => p.User) 
-            .HasForeignKey(p => p.UserId) 
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(u => u.RegistrationDate).IsRequired();
+       
+        //
+        builder.HasMany(u => u.Purchases).WithOne().HasForeignKey(p => p.UserId);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace SomeShop.Application.Abstractions.Behaviors;
+﻿namespace SomeShop.Application.Exceptions;
 
 public sealed class ValidationException : Exception
 {

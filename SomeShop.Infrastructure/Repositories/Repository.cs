@@ -1,29 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SomeShop.Domain.Abstractions;
-
-namespace SomeShop.Infrastructure.Repositories;
+﻿namespace SomeShop.Infrastructure.Repositories;
 
 public abstract class Repository<T>
-    where T : Entity
+    where T : class
 {
-    protected readonly ApplicationDbContext DbContext;
+    protected readonly ApplicationDbContext _context;
 
-    protected Repository(ApplicationDbContext dbContext)
+    public Repository(ApplicationDbContext context)
     {
-        DbContext = dbContext;
+        _context = context;
     }
 
-    public async Task<T?> GetByIdAsync(
-        Guid id,
-        CancellationToken cancellationToken = default)
+    public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await DbContext
-            .Set<T>()
-            .FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
+        return await _context.Set<T>().FindAsync(id, ct);
     }
 
     public virtual void Add(T entity)
     {
-        DbContext.Add(entity);
+        _context.Set<T>().Add(entity);
     }
 }

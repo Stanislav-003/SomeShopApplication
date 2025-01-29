@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SomeShop.Domain.Products;
 using SomeShop.Domain.Purchases;
+using SomeShop.Domain.Users;
 
 namespace SomeShop.Infrastructure.Configurations;
 
@@ -13,27 +14,14 @@ public class PurchaseItemConfiguration : IEntityTypeConfiguration<PurchaseItem>
 
         builder.HasKey(pi => pi.Id);
 
-        builder.Property(pi => pi.Id)
-            .IsRequired()
-            .ValueGeneratedNever();
+        builder.Property(pi => pi.Id).HasConversion(purchaseItem => purchaseItem.Value, value => new PurchaseItemId(value));
+        
+        builder.OwnsOne(p => p.Quantity);
 
-        builder.Property(pi => pi.ProductId)
-            .IsRequired();
+        builder.OwnsOne(p => p.PricePerUnit);
 
-        builder.Property(pi => pi.PurchaseId)
-            .IsRequired();
+        builder.HasOne<Product>().WithMany().HasForeignKey(pi => pi.ProductId);
 
-        builder.Property(pi => pi.Quantity)
-            .IsRequired();
-
-        builder.HasOne(pi => pi.Product)
-            .WithMany()
-            .HasForeignKey(pi => pi.ProductId)
-            .OnDelete(DeleteBehavior.Restrict); 
-
-        builder.HasOne(pi => pi.Purchase)
-            .WithMany(p => p.Items)
-            .HasForeignKey(pi => pi.PurchaseId)
-            .OnDelete(DeleteBehavior.Cascade); 
+        builder.HasOne<Purchase>().WithMany().HasForeignKey(pi => pi.PurchaseId);
     }
 }

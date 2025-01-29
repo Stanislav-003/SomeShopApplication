@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using SomeShop.Application.Abstractions.Messaging;
-using System;
+using SomeShop.Application.Exceptions;
 
 namespace SomeShop.Application.Abstractions.Behaviors;
 
@@ -39,7 +39,7 @@ public class ValidationBehavior<TRequest, TResponse>
 
         if (validationErrors.Any())
         {
-            throw new ValidationException(validationErrors);
+            throw new Exceptions.ValidationException(validationErrors);
         }
 
         return await next();

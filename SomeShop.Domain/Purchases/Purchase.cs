@@ -3,48 +3,47 @@ using SomeShop.Domain.Users;
 
 namespace SomeShop.Domain.Purchases;
 
-public class Purchase : Entity
+public class Purchase
 {
-    private Purchase(Guid id, Number number, DateTime createdAt, TotalPrice totalPrice, Guid userId) : base(id)
-    {
-        Number = number;
-        CreatedAt = createdAt;
-        TotalPrice = totalPrice;
-        UserId = userId;
-    }
-
     private Purchase()
     {
-        
     }
+
+    public PurchaseId Id { get; private set; }
     public Number Number { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public TotalPrice TotalPrice { get; private set; }
-    public Guid UserId { get; private set; }
-    public User User { get; private set; }
+    public UserId UserId { get; private set; }
 
-    private readonly List<PurchaseItem> _items = new();
-    public IReadOnlyCollection<PurchaseItem> Items => _items.AsReadOnly();
+    private readonly HashSet<PurchaseItem> _purchaseItems = new();
+    public IReadOnlyCollection<PurchaseItem> PurchaseItems => _purchaseItems;
 
-    public static Purchase Create(Number number, TotalPrice totalPrice, Guid userId)
+    public static Result<Purchase> Create(Number number, TotalPrice totalPrice, UserId userId)
     {
-        var purchase = new Purchase(Guid.NewGuid(), number, DateTime.UtcNow, totalPrice, userId);
-        
+        var purchase = new Purchase
+        {
+            Id = new PurchaseId(Guid.NewGuid()),
+            Number = number,
+            CreatedAt = DateTime.UtcNow,
+            TotalPrice = totalPrice,
+            UserId = userId
+        };
+
         return purchase;
     }
 
-    public Result AddItem(Guid productId, int quantity, decimal price)
-    {
-        var item = new PurchaseItem(Guid.NewGuid(), productId, Id, quantity);
-        _items.Add(item);
+    //public Result<PurchaseItem> AddItem(Guid productId, int quantity, decimal price)
+    //{
+    //    var item = new PurchaseItem(Guid.NewGuid(), productId, Id, quantity);
+    //    _items.Add(item);
 
-        RecalculateTotalPrice(price, quantity);
+    //    RecalculateTotalPrice(price, quantity);
 
-        return Result.Success();
-    }
+    //    return item;
+    //}
 
-    private void RecalculateTotalPrice(decimal pricePerItem, int quantity)
-    {
-        TotalPrice = new TotalPrice(TotalPrice.Value + pricePerItem * quantity);
-    }
+    //private void RecalculateTotalPrice(decimal pricePerItem, int quantity)
+    //{
+    //    TotalPrice = new TotalPrice(TotalPrice.Value + pricePerItem * quantity);
+    //}
 }

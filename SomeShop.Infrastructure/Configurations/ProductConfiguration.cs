@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SomeShop.Domain.Products;
+using SomeShop.Domain.Purchases;
 
 namespace SomeShop.Infrastructure.Configurations;
 
@@ -12,35 +13,17 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.Id)
-            .IsRequired()
-            .ValueGeneratedNever();
+        builder.Property(p => p.Id).HasConversion(product => product.Value, value => new ProductId(value));
 
-        builder.Property(p => p.Name)
-            .IsRequired()
-            .HasConversion(
-                v => v.Value, 
-                v => new Name(v))
-            .HasMaxLength(100);
+        builder.OwnsOne(p => p.Name);
 
-        builder.Property(p => p.Category)
-            .IsRequired()
-            .HasConversion(
-                v => v.Value, 
-                v => new Categtory(v))
-            .HasMaxLength(50);
+        builder.OwnsOne(p => p.Category);
 
-        builder.Property(p => p.Article)
-            .IsRequired()
-            .HasConversion(
-                v => v.Value,
-                v => new Article(v))
-            .HasMaxLength(50);
+        builder.OwnsOne(p => p.Article);
 
-        builder.Property(p => p.Price)
-            .IsRequired()
-            .HasConversion(
-                v => v.Value,
-                v => new Price(v));
+        builder.OwnsOne(p => p.Price);
+
+        //
+        builder.HasMany(p => p.PurchaseItems).WithOne().HasForeignKey(pi => pi.ProductId);
     }
 }

@@ -2,7 +2,7 @@
 
 public interface IUserRepository
 {
-    Task<IEnumerable<User>> GetUsersByBirthday(DateTime? birthDay = null, CancellationToken ct = default);
+    Task<IEnumerable<User>> GetUsersByBirthday(CancellationToken ct = default);
     
     Task<IEnumerable<User>> GetRecentPurchasesAsync(int nDays, CancellationToken ct = default);
 

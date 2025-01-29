@@ -2,4 +2,4 @@
 
 namespace SomeShop.Application.Users.GetUsersByBirthday;
 
-public record UsersResponse(Guid userId, string firstName, string lastName);
+public record GetUsersByBirthdayResponse(Guid userId, string firstName, string lastName);
