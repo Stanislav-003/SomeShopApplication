@@ -2,4 +2,4 @@
 
 namespace SomeShop.Application.Users.GetUserProducts;
 
-public record GetUserProductsQuery(Guid userId) : IQuery<IReadOnlyList<UserProductsResponse>>;
+public record GetUserProductsQuery(Guid userId) : IQuery<IEnumerable<UserProductsResponse>>;

@@ -4,7 +4,7 @@ using SomeShop.Domain.Users;
 
 namespace SomeShop.Application.Users.GetUsersByBirthday;
 
-public class GetUsersByBirthdayQueryHandler : IQueryHandler<GetUsersByBirthdayQuery, IReadOnlyCollection<GetUsersByBirthdayResponse>>
+public class GetUsersByBirthdayQueryHandler : IQueryHandler<GetUsersByBirthdayQuery, IEnumerable<GetUsersByBirthdayResponse>>
 {
     private readonly IUserRepository _userRepository;
 
@@ -13,16 +13,9 @@ public class GetUsersByBirthdayQueryHandler : IQueryHandler<GetUsersByBirthdayQu
         _userRepository = userRepository;
     }
 
-    public async Task<Result<IReadOnlyCollection<GetUsersByBirthdayResponse>>> Handle(GetUsersByBirthdayQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<GetUsersByBirthdayResponse>>> Handle(GetUsersByBirthdayQuery request, CancellationToken cancellationToken)
     {
-        DateTime queryDate = DateTime.UtcNow;
-
         var users = await _userRepository.GetUsersByBirthday(cancellationToken);
-
-        if (users == null || !users.Any())
-        {
-            return Result.Failure<IReadOnlyCollection<GetUsersByBirthdayResponse>>(new Error("Firstname.Empty", "First name cannot be empty."));
-        }
 
         var usersResponse = users.Select(u => new GetUsersByBirthdayResponse(
             u.Id.Value, 

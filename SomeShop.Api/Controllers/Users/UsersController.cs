@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SomeShop.Application.Users.CreateUser;
+using SomeShop.Application.Users.GetUserProducts;
 using SomeShop.Application.Users.GetUsersByBirthday;
 using SomeShop.Application.Users.GetUsersForNDays;
 using SomeShop.Domain.Abstractions;
@@ -39,13 +40,13 @@ public class UsersController : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpGet("getUserById")]
+    [HttpGet("getUserByBirthdayToday")]
     public async Task<IActionResult> GetUsersByBirthday(
         CancellationToken cancellationToken)
     {
         var query = new GetUsersByBirthdayQuery();
 
-        Result<IReadOnlyCollection<GetUsersByBirthdayResponse>> result = await _sender.Send(query, cancellationToken);
+        Result<IEnumerable<GetUsersByBirthdayResponse>> result = await _sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -56,13 +57,30 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("getUsersPurchaseForNdays")]
-    public async Task<IActionResult> GetUsersForNDays(
+    public async Task<IActionResult> GetUsersPurchaseForNDays(
         [FromQuery] GetUsersForNDaysRequest getUsersForNDaysRequest,
         CancellationToken cancellationToken)
     {
         var query = new GetUsersForNDaysQuery(getUsersForNDaysRequest.nDays);
 
-        Result<IReadOnlyCollection<GetUsersForNDaysResponse>> result = await _sender.Send(query, cancellationToken);
+        Result<IEnumerable<GetUsersForNDaysResponse>> result = await _sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpGet("getUserProductsCategoriesById")]
+    public async Task<IActionResult> GetUserProductsCategoriesById(
+        [FromQuery] GetUserProductsCategoriesByIdRequest getUserProductsCategoriesByIdRequest,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetUserProductsQuery(getUserProductsCategoriesByIdRequest.UserId);
+
+        Result<IEnumerable<UserProductsResponse>> result = await _sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
         {

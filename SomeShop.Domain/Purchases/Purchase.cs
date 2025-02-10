@@ -18,42 +18,30 @@ public class Purchase
     private readonly HashSet<PurchaseItem> _purchaseItems = new();
     public IReadOnlyCollection<PurchaseItem> PurchaseItems => _purchaseItems;
 
-    public static Result<Purchase> Create(Number number, TotalPrice totalPrice, UserId userId)
+    public static Result<Purchase> Create(Number number, UserId userId)
     {
         var purchase = new Purchase
         {
             Id = new PurchaseId(Guid.NewGuid()),
             Number = number,
             CreatedAt = DateTime.UtcNow,
-            TotalPrice = totalPrice,
             UserId = userId
         };
 
         return purchase;
     }
 
-    public void AddPurchaseItem(PurchaseItem purchaseItem)
+    public void AddPurchaseItems(IEnumerable<PurchaseItem> purchaseItems)
     {
-        if (purchaseItem == null)
+        foreach (var item in purchaseItems)
         {
-            throw new ArgumentNullException(nameof(purchaseItem));
+            _purchaseItems.Add(item);
         }
-
-        _purchaseItems.Add(purchaseItem);
+        RecalculateTotalPrice();
     }
 
-    //public Result<PurchaseItem> AddItem(Guid productId, int quantity, decimal price)
-    //{
-    //    var item = new PurchaseItem(Guid.NewGuid(), productId, Id, quantity);
-    //    _items.Add(item);
-
-    //    RecalculateTotalPrice(price, quantity);
-
-    //    return item;
-    //}
-
-    //private void RecalculateTotalPrice(decimal pricePerItem, int quantity)
-    //{
-    //    TotalPrice = new TotalPrice(TotalPrice.Value + pricePerItem * quantity);
-    //}
+    private void RecalculateTotalPrice()
+    {
+        TotalPrice = new TotalPrice(_purchaseItems.Sum(i => i.Quantity.Value * i.PricePerUnit.Value));
+    }
 }

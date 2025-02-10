@@ -3,4 +3,4 @@ using SomeShop.Application.Users.GetUsersByBirthday;
 
 namespace SomeShop.Application.Users.GetUsersForNDays;
 
-public record GetUsersForNDaysQuery(int nDays) : IQuery<IReadOnlyCollection<GetUsersForNDaysResponse>>;
+public record GetUsersForNDaysQuery(int nDays) : IQuery<IEnumerable<GetUsersForNDaysResponse>>;

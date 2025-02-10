@@ -26,22 +26,19 @@ public class CreatePurchaseCommandHandler : ICommandHandler<CreatePurchaseComman
     public async Task<Result<PurchaseId>> Handle(CreatePurchaseCommand request, CancellationToken cancellationToken)
     {
         var productIds = request.Items.Select(item => new ProductId(item.ProductId)).ToList();
+
         var products = await _productRepository.GetByIdAsync(productIds, cancellationToken);
 
-        if (products.Count() != request.Items.Count)
+        var productDictionary = products.ToDictionary(p => p.Id.Value);
+
+        if (!request.Items.All(item => productDictionary.ContainsKey(item.ProductId)))
         {
             return Result.Failure<PurchaseId>(new Error("Products.NotFound", "Some products not found"));
         }
 
         var purchaseNumber = new Number(Guid.NewGuid().ToString());
-        var totalPrice = new TotalPrice(
-            request.Items.Sum(item =>
-            {
-                var product = products.First(p => p.Id.Value == item.ProductId);
-                return product.Price.Value * item.Quantity;
-            }));
 
-        var purchaseResult = Purchase.Create(purchaseNumber, totalPrice, new UserId(request.UserId));
+        var purchaseResult = Purchase.Create(purchaseNumber, new UserId(request.UserId));
 
         if (purchaseResult.IsFailure)
         {
@@ -50,18 +47,18 @@ public class CreatePurchaseCommandHandler : ICommandHandler<CreatePurchaseComman
 
         var purchase = purchaseResult.Value;
 
-        foreach (var item in request.Items)
+        var purchaseItems = request.Items.Select(item =>
         {
-            var product = products.First(p => p.Id.Value == item.ProductId);
-            var purchaseItemResult = PurchaseItem.Create(new Quantity(item.Quantity), new PricePerUnit(product.Price.Value), purchase.Id, product.Id);
+            var product = productDictionary[item.ProductId];
+            return PurchaseItem.Create(
+                new Quantity(item.Quantity),
+                new PricePerUnit(product.Price.Value),
+                purchase.Id,
+                product.Id
+            ).Value;
+        }).ToList();
 
-            if (purchaseItemResult.IsFailure)
-            {
-                return Result.Failure<PurchaseId>(purchaseItemResult.Error);
-            }
-
-            purchase.AddPurchaseItem(purchaseItemResult.Value);
-        }
+        purchase.AddPurchaseItems(purchaseItems);
 
         _purchaseRepository.Add(purchase);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

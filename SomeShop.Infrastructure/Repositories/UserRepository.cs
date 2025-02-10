@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SomeShop.Domain.Products;
 using SomeShop.Domain.Users;
 
 namespace SomeShop.Infrastructure.Repositories;

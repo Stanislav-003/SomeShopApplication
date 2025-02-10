@@ -2,4 +2,4 @@
 
 namespace SomeShop.Application.Users.GetUsersByBirthday;
 
-public record GetUsersByBirthdayQuery() : IQuery<IReadOnlyCollection<GetUsersByBirthdayResponse>>;
+public record GetUsersByBirthdayQuery() : IQuery<IEnumerable<GetUsersByBirthdayResponse>>;

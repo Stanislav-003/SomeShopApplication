@@ -9,10 +9,11 @@ public class PurchaseRepository : Repository<Purchase>, IPurchaseRepository
 {
     public PurchaseRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
-    public async Task<IEnumerable<Purchase>> GetPurchasesByUserId(UserId userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Purchase>> GetPurchasesByUserId(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Set<Purchase>()
-            .Where(p => p.UserId == userId) 
+            .Where(p => p.UserId == new UserId(userId))
+            .Include(p => p.PurchaseItems)
             .ToListAsync(cancellationToken);
     }
 

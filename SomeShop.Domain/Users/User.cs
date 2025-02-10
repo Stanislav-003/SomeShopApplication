@@ -29,10 +29,4 @@ public class User
 
         return user;
     }
-
-    //public Result AddPurchase(Purchase purchase)
-    //{
-    //    _purchases.Add(purchase);
-    //    return Result.Success();
-    //}
 }

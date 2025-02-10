@@ -2,10 +2,11 @@
 using SomeShop.Domain.Abstractions;
 using SomeShop.Domain.Purchases;
 using SomeShop.Domain.Users;
+using System.Linq;
 
 namespace SomeShop.Application.Users.GetUsersForNDays;
 
-public class GetUsersForNDaysQueryHandler : IQueryHandler<GetUsersForNDaysQuery, IReadOnlyCollection<GetUsersForNDaysResponse>>
+public class GetUsersForNDaysQueryHandler : IQueryHandler<GetUsersForNDaysQuery, IEnumerable<GetUsersForNDaysResponse>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPurchaseRepository _purchaseRepository;
@@ -16,34 +17,23 @@ public class GetUsersForNDaysQueryHandler : IQueryHandler<GetUsersForNDaysQuery,
         _purchaseRepository = purchaseRepository;
     }
 
-    public async Task<Result<IReadOnlyCollection<GetUsersForNDaysResponse>>> Handle(GetUsersForNDaysQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<GetUsersForNDaysResponse>>> Handle(GetUsersForNDaysQuery request, CancellationToken cancellationToken)
     {
-        DateTime endDate = DateTime.UtcNow;
-        DateTime startDate = endDate.AddDays(-request.nDays);
-
         var users = await _userRepository.GetRecentPurchasesAsync(request.nDays, cancellationToken);
 
-        var result = new List<GetUsersForNDaysResponse>();
-
-        foreach (var user in users)
+        var result = users.Select(user =>
         {
-            var recentPurchases = await _purchaseRepository.GetPurchasesByUserId(user.Id, cancellationToken);
-
-            var lastPurchase = recentPurchases
-                .Where(p => p.CreatedAt >= startDate && p.CreatedAt <= endDate)
+            var lastPurchase = user.Purchases
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefault();
 
-            if (lastPurchase != null)
-            {
-                result.Add(new GetUsersForNDaysResponse(
-                    user.Id.Value,
-                    user.FullName.FirstName,
-                    user.FullName.LastName,
-                    lastPurchase.CreatedAt
-                ));
-            }
-        }
+            return new GetUsersForNDaysResponse(
+                user.Id.Value,
+                user.FullName.FirstName,
+                user.FullName.LastName,
+                lastPurchase!.CreatedAt
+            );
+        }).ToList();
 
         return result;
     }
